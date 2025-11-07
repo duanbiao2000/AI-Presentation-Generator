@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { SlideContent, LayoutType } from '../types';
 import type { Theme } from '../App';
 import Slide from './Slide';
@@ -26,25 +26,30 @@ const PresentationPreview: React.FC<PresentationPreviewProps> = ({
 }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  const goToPrevious = useCallback(() => {
+    setCurrentSlide((prev) => (prev > 0 ? prev - 1 : prev));
+  }, []);
+
+  const goToNext = useCallback(() => {
+    setCurrentSlide((prev) => (prev < slides.length - 1 ? prev + 1 : prev));
+  }, [slides.length]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Escape' && isMaximized) {
             onToggleMaximize();
+        } else if (e.key === 'ArrowLeft') {
+            goToPrevious();
+        } else if (e.key === 'ArrowRight') {
+            goToNext();
         }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => {
         window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isMaximized, onToggleMaximize]);
+  }, [isMaximized, onToggleMaximize, goToPrevious, goToNext]);
 
-  const goToPrevious = () => {
-    setCurrentSlide((prev) => (prev > 0 ? prev - 1 : prev));
-  };
-
-  const goToNext = () => {
-    setCurrentSlide((prev) => (prev < slides.length - 1 ? prev + 1 : prev));
-  };
 
   const handleLayoutSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     onLayoutChange(currentSlide, e.target.value as LayoutType);
@@ -62,16 +67,6 @@ const PresentationPreview: React.FC<PresentationPreviewProps> = ({
 
   return (
     <div className={wrapperClasses}>
-      {isMaximized && (
-        <button
-          onClick={onToggleMaximize}
-          className="absolute top-4 right-4 p-2 rounded-full text-gray-300 hover:bg-gray-700 hover:text-white transition-colors z-10"
-          aria-label="Minimize preview"
-        >
-          <MinimizeIcon />
-        </button>
-      )}
-
       <div className="w-full h-full flex-grow flex items-center justify-center">
         <div className="w-full aspect-[16/9] overflow-hidden rounded-lg shadow-lg">
            <div 
@@ -121,15 +116,13 @@ const PresentationPreview: React.FC<PresentationPreviewProps> = ({
             >
                 {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
             </button>
-            {!isMaximized && (
-                <button
-                    onClick={onToggleMaximize}
-                    className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
-                    aria-label="Maximize preview"
-                >
-                    <MaximizeIcon />
-                </button>
-            )}
+            <button
+                onClick={onToggleMaximize}
+                className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+                aria-label={isMaximized ? "Minimize preview" : "Maximize preview"}
+            >
+                {isMaximized ? <MinimizeIcon /> : <MaximizeIcon />}
+            </button>
             <div className='flex items-center space-x-2'>
                 <button
                 onClick={goToPrevious}
