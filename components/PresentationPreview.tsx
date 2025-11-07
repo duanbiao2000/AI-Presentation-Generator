@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { SlideContent, LayoutType } from '../types';
 import type { Theme } from '../App';
 import Slide from './Slide';
@@ -8,6 +8,8 @@ import DownloadIcon from './icons/DownloadIcon';
 import LayoutIcon from './icons/LayoutIcon';
 import SunIcon from './icons/SunIcon';
 import MoonIcon from './icons/MoonIcon';
+import MaximizeIcon from './icons/MaximizeIcon';
+import MinimizeIcon from './icons/MinimizeIcon';
 
 interface PresentationPreviewProps {
   slides: SlideContent[];
@@ -15,10 +17,26 @@ interface PresentationPreviewProps {
   onLayoutChange: (slideIndex: number, newLayout: LayoutType) => void;
   theme: Theme;
   onThemeChange: (theme: Theme) => void;
+  isMaximized: boolean;
+  onToggleMaximize: () => void;
 }
 
-const PresentationPreview: React.FC<PresentationPreviewProps> = ({ slides, onExport, onLayoutChange, theme, onThemeChange }) => {
+const PresentationPreview: React.FC<PresentationPreviewProps> = ({ 
+    slides, onExport, onLayoutChange, theme, onThemeChange, isMaximized, onToggleMaximize 
+}) => {
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape' && isMaximized) {
+            onToggleMaximize();
+        }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMaximized, onToggleMaximize]);
 
   const goToPrevious = () => {
     setCurrentSlide((prev) => (prev > 0 ? prev - 1 : prev));
@@ -38,17 +56,28 @@ const PresentationPreview: React.FC<PresentationPreviewProps> = ({ slides, onExp
 
   const currentLayout = slides[currentSlide]?.layout || 'TEXT_ONLY';
 
+  const wrapperClasses = isMaximized 
+    ? "fixed inset-0 bg-gray-900/90 backdrop-blur-sm z-50 p-4 sm:p-8 flex flex-col items-center justify-center"
+    : "w-full h-full flex flex-col";
+
   return (
-    <div className="w-full h-full flex flex-col">
-      <div className="flex-grow w-full flex items-center justify-center">
-        {/* This container defines the viewport of the slider, maintaining the aspect ratio and hiding overflow */}
+    <div className={wrapperClasses}>
+      {isMaximized && (
+        <button
+          onClick={onToggleMaximize}
+          className="absolute top-4 right-4 p-2 rounded-full text-gray-300 hover:bg-gray-700 hover:text-white transition-colors z-10"
+          aria-label="Minimize preview"
+        >
+          <MinimizeIcon />
+        </button>
+      )}
+
+      <div className="w-full h-full flex-grow flex items-center justify-center">
         <div className="w-full aspect-[16/9] overflow-hidden rounded-lg shadow-lg">
-           {/* This is the 'track' that contains all slides and moves horizontally */}
            <div 
             className="flex h-full transition-transform duration-300 ease-in-out"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
            >
-            {/* Each slide is a child of the track, sized to fill the viewport */}
             {slides.map((slide, index) => (
               <div key={index} className="w-full h-full flex-shrink-0">
                 <Slide slide={slide} theme={theme} />
@@ -57,9 +86,9 @@ const PresentationPreview: React.FC<PresentationPreviewProps> = ({ slides, onExp
            </div>
         </div>
       </div>
-      <div className="flex-shrink-0 mt-4">
+      <div className="flex-shrink-0 mt-4 w-full max-w-[90vw] lg:max-w-7xl">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 transition-opacity ${isMaximized ? 'opacity-0 invisible' : 'opacity-100'}`}>
             <button
                 onClick={onExport}
                 className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-green-500"
@@ -84,14 +113,23 @@ const PresentationPreview: React.FC<PresentationPreviewProps> = ({ slides, onExp
               </select>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className={`flex items-center space-x-2 ${isMaximized ? 'mx-auto' : ''}`}>
             <button
               onClick={handleThemeToggle}
-              className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+              className={`p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition-colors ${isMaximized ? 'hidden' : ''}`}
               aria-label="Toggle theme"
             >
                 {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
             </button>
+            {!isMaximized && (
+                <button
+                    onClick={onToggleMaximize}
+                    className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+                    aria-label="Maximize preview"
+                >
+                    <MaximizeIcon />
+                </button>
+            )}
             <div className='flex items-center space-x-2'>
                 <button
                 onClick={goToPrevious}

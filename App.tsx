@@ -25,6 +25,7 @@ const App: React.FC = () => {
   const [tone, setTone] = useState('Book Club (读书会)');
   const [customTone, setCustomTone] = useState('');
   const [theme, setTheme] = useState<Theme>('dark');
+  const [isPreviewMaximized, setIsPreviewMaximized] = useState<boolean>(false);
 
 
   const handleGenerate = useCallback(async () => {
@@ -198,6 +199,8 @@ How will we know we've achieved it? (我们如何衡量这个成果？)
                 onLayoutChange={handleLayoutChange}
                 theme={theme}
                 onThemeChange={setTheme}
+                isMaximized={isPreviewMaximized}
+                onToggleMaximize={() => setIsPreviewMaximized(!isPreviewMaximized)}
               />
             )}
             {!slides && !isLoading && !error && (
