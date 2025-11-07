@@ -7,6 +7,7 @@ interface TextInputAreaProps {
   onGenerate: () => void;
   isLoading: boolean;
   placeholder: string;
+  onAcceptSample: () => void;
   presentationStyle: PresentationStyle;
   onStyleChange: (style: PresentationStyle) => void;
   language: string;
@@ -20,7 +21,7 @@ interface TextInputAreaProps {
 }
 
 const TextInputArea: React.FC<TextInputAreaProps> = ({ 
-    value, onChange, onGenerate, isLoading, placeholder, 
+    value, onChange, onGenerate, isLoading, placeholder, onAcceptSample,
     presentationStyle, onStyleChange,
     language, onLanguageChange, customLanguage, onCustomLanguageChange,
     tone, onToneChange, customTone, onCustomToneChange
@@ -34,14 +35,35 @@ const TextInputArea: React.FC<TextInputAreaProps> = ({
         <p className="text-sm text-gray-500">The more detailed your notes, the better the result.</p>
       </div>
 
-      <textarea
-        id="transcript-input"
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="w-full h-full min-h-[400px] p-4 bg-gray-800 border border-gray-700 rounded-lg text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 resize-none"
-        disabled={isLoading}
-      />
+      <div className="relative w-full h-full bg-gray-800 rounded-lg border border-gray-700 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-shadow duration-200">
+        {!value && (
+            <div 
+                aria-hidden="true"
+                className="absolute inset-0 p-4 text-gray-500 pointer-events-none overflow-y-auto"
+            >
+                <pre className="font-sans whitespace-pre-wrap text-base">{placeholder}</pre>
+            </div>
+        )}
+        <textarea
+            id="transcript-input"
+            value={value}
+            onChange={onChange}
+            className="relative z-10 w-full h-full min-h-[400px] p-4 bg-transparent text-gray-300 resize-none focus:outline-none"
+            disabled={isLoading}
+            onKeyDown={(e) => {
+                if (e.key === 'Tab' && !value && !isLoading) {
+                    e.preventDefault();
+                    onAcceptSample();
+                }
+            }}
+        />
+        {!value && !isLoading && (
+            <div className="absolute bottom-3 right-3 text-xs text-gray-500 bg-gray-900/50 backdrop-blur-sm px-2 py-1 rounded-md pointer-events-none">
+                Press <kbd className="px-2 py-1 text-xs font-semibold text-gray-300 bg-gray-700 border border-gray-600 rounded-md">Tab</kbd> to use sample
+            </div>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Language Selector */}
         <div>

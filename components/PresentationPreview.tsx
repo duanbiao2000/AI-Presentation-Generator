@@ -40,8 +40,22 @@ const PresentationPreview: React.FC<PresentationPreviewProps> = ({ slides, onExp
 
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="flex-grow flex items-center justify-center p-4">
-        <Slide slide={slides[currentSlide]} theme={theme} />
+      <div className="flex-grow w-full flex items-center justify-center">
+        {/* This container defines the viewport of the slider, maintaining the aspect ratio and hiding overflow */}
+        <div className="w-full aspect-[16/9] overflow-hidden rounded-lg shadow-lg">
+           {/* This is the 'track' that contains all slides and moves horizontally */}
+           <div 
+            className="flex h-full transition-transform duration-300 ease-in-out"
+            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+           >
+            {/* Each slide is a child of the track, sized to fill the viewport */}
+            {slides.map((slide, index) => (
+              <div key={index} className="w-full h-full flex-shrink-0">
+                <Slide slide={slide} theme={theme} />
+              </div>
+            ))}
+           </div>
+        </div>
       </div>
       <div className="flex-shrink-0 mt-4">
         <div className="flex items-center justify-between flex-wrap gap-4">

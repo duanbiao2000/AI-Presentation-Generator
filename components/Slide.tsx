@@ -63,7 +63,7 @@ const Slide: React.FC<SlideProps> = ({ slide, theme }) => {
 
   if (!slide) {
     return (
-        <div className={`aspect-[16/9] w-full ${themeClasses.bg} rounded-lg shadow-lg overflow-hidden flex items-center justify-center`}>
+        <div className={`aspect-[16/9] w-full ${themeClasses.bg} overflow-hidden flex items-center justify-center`}>
             <p className={themeClasses.loadingText}>Loading slide...</p>
         </div>
     );
@@ -140,7 +140,7 @@ const Slide: React.FC<SlideProps> = ({ slide, theme }) => {
   };
 
   return (
-    <div className={`aspect-[16/9] w-full ${themeClasses.bg} rounded-lg shadow-lg overflow-hidden flex flex-col transition-colors duration-300`}>
+    <div className={`aspect-[16/9] w-full ${themeClasses.bg} overflow-hidden flex flex-col transition-colors duration-300`}>
       {renderContent()}
     </div>
   );
