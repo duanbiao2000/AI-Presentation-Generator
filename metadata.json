@@ -1,0 +1,5 @@
+{
+  "name": "AI Presentation Generator",
+  "description": "An application that transforms your notes and speech transcripts into a beautiful, ready-to-present slideshow using AI. You can then export the generated presentation to PowerPoint.",
+  "requestFramePermissions": []
+}
