@@ -9,9 +9,22 @@ interface TextInputAreaProps {
   placeholder: string;
   presentationStyle: PresentationStyle;
   onStyleChange: (style: PresentationStyle) => void;
+  language: string;
+  onLanguageChange: (language: string) => void;
+  customLanguage: string;
+  onCustomLanguageChange: (language: string) => void;
+  tone: string;
+  onToneChange: (tone: string) => void;
+  customTone: string;
+  onCustomToneChange: (tone: string) => void;
 }
 
-const TextInputArea: React.FC<TextInputAreaProps> = ({ value, onChange, onGenerate, isLoading, placeholder, presentationStyle, onStyleChange }) => {
+const TextInputArea: React.FC<TextInputAreaProps> = ({ 
+    value, onChange, onGenerate, isLoading, placeholder, 
+    presentationStyle, onStyleChange,
+    language, onLanguageChange, customLanguage, onCustomLanguageChange,
+    tone, onToneChange, customTone, onCustomToneChange
+ }) => {
   return (
     <div className="flex flex-col space-y-4">
       <div>
@@ -29,10 +42,67 @@ const TextInputArea: React.FC<TextInputAreaProps> = ({ value, onChange, onGenera
         className="w-full h-full min-h-[400px] p-4 bg-gray-800 border border-gray-700 rounded-lg text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 resize-none"
         disabled={isLoading}
       />
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Language Selector */}
+        <div>
+            <label htmlFor="language-style" className="block text-sm font-medium text-gray-400 mb-1">
+                Output Language
+            </label>
+            <select
+                id="language-style"
+                value={language}
+                onChange={(e) => onLanguageChange(e.target.value)}
+                disabled={isLoading}
+                className="w-full bg-gray-800 border border-gray-700 rounded-md shadow-sm pl-3 pr-10 py-3 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-white"
+            >
+                <option value="Chinese (中文)">Chinese (中文)</option>
+                <option value="English">English</option>
+                <option value="Bilingual (中英混杂)">Bilingual (中英混杂)</option>
+                <option value="OTHER">Other (Custom)</option>
+            </select>
+            {language === 'OTHER' && (
+                <input
+                    type="text"
+                    value={customLanguage}
+                    onChange={(e) => onCustomLanguageChange(e.target.value)}
+                    placeholder="Enter language (e.g., Japanese)"
+                    className="mt-2 w-full bg-gray-800 border border-gray-700 rounded-md shadow-sm pl-3 pr-10 py-3 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-white"
+                    disabled={isLoading}
+                />
+            )}
+        </div>
+        {/* Tone Selector */}
+        <div>
+            <label htmlFor="tone-style" className="block text-sm font-medium text-gray-400 mb-1">
+                Presentation Tone
+            </label>
+            <select
+                id="tone-style"
+                value={tone}
+                onChange={(e) => onToneChange(e.target.value)}
+                disabled={isLoading}
+                className="w-full bg-gray-800 border border-gray-700 rounded-md shadow-sm pl-3 pr-10 py-3 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-white"
+            >
+                <option value="Book Club (读书会)">Book Club (读书会)</option>
+                <option value="Educational Training (教育培训)">Educational Training (教育培训)</option>
+                <option value="Tech Forum (技术论坛)">Tech Forum (技术论坛)</option>
+                <option value="OTHER">Other (Custom)</option>
+            </select>
+            {tone === 'OTHER' && (
+                <input
+                    type="text"
+                    value={customTone}
+                    onChange={(e) => onCustomToneChange(e.target.value)}
+                    placeholder="Enter tone (e.g., Casual, Formal)"
+                    className="mt-2 w-full bg-gray-800 border border-gray-700 rounded-md shadow-sm pl-3 pr-10 py-3 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-white"
+                    disabled={isLoading}
+                />
+            )}
+        </div>
+        {/* Style Selector */}
+        <div>
              <label htmlFor="presentation-style" className="block text-sm font-medium text-gray-400 mb-1">
-                Presentation Style
+                Visual Style
             </label>
             <select
                 id="presentation-style"
@@ -47,7 +117,8 @@ const TextInputArea: React.FC<TextInputAreaProps> = ({ value, onChange, onGenera
             </select>
         </div>
 
-        <div className="flex-1 flex items-end">
+        {/* Generate Button */}
+        <div className="flex items-end">
             <button
                 onClick={onGenerate}
                 disabled={isLoading}

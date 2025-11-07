@@ -44,40 +44,44 @@ const presentationSchema = {
     items: slideSchema,
 };
 
-const getStylePrompt = (style: PresentationStyle): string => {
+const getGenerationDirectives = (style: PresentationStyle, language: string, tone: string): string => {
+    let styleInstruction = '';
     switch (style) {
         case 'TEXT_FOCUSED':
-            return `
-- Focus on detailed, text-heavy slides.
-- Prioritize 'TEXT_ONLY' and 'TWO_COLUMNS' layouts.
-- Use the 'TITLE_ONLY' layout for section breaks.
-- Avoid image-based layouts unless absolutely necessary.
+            styleInstruction = `
+- **Visual Style**: Focus on detailed, text-heavy slides. Prioritize 'TEXT_ONLY' and 'TWO_COLUMNS' layouts. Use 'TITLE_ONLY' for section breaks. Avoid image-based layouts unless absolutely necessary.
             `;
+            break;
         case 'VISUAL_FOCUSED':
-            return `
-- Focus on visually driven slides with minimal text.
-- Prioritize 'IMAGE_FOCUSED' and 'TEXT_WITH_IMAGE' layouts.
-- Each visual slide MUST have a powerful, descriptive image prompt.
-- Text content should be very concise.
+            styleInstruction = `
+- **Visual Style**: Focus on visually driven slides with minimal text. Prioritize 'IMAGE_FOCUSED' and 'TEXT_WITH_IMAGE' layouts. Each visual slide MUST have a powerful, descriptive image prompt. Text content should be very concise.
             `;
+            break;
         case 'BALANCED':
         default:
-            return `
-- Create a balanced mix of text and visuals.
-- Use a variety of layouts like 'TEXT_WITH_IMAGE', 'TEXT_ONLY', and 'TWO_COLUMNS' to keep the presentation engaging.
-- Ensure any visual layouts have a relevant and complementary image prompt.
+            styleInstruction = `
+- **Visual Style**: Create a balanced mix of text and visuals. Use a variety of layouts like 'TEXT_WITH_IMAGE', 'TEXT_ONLY', and 'TWO_COLUMNS' to keep the presentation engaging.
             `;
+            break;
     }
+    
+    return `
+- **Output Language**: The entire presentation's text (titles, content, etc.) MUST be in **${language}**.
+- **Presentation Tone**: The style of writing should be appropriate for a **${tone}**.
+${styleInstruction}
+    `;
 }
 
 export const generateSlidesFromText = async (
   text: string,
   style: PresentationStyle,
+  language: string,
+  tone: string,
   setLoadingMessage: (message: string) => void
 ): Promise<SlideContent[]> => {
     setLoadingMessage("Analyzing your text and structuring slides...");
     
-    const styleInstruction = getStylePrompt(style);
+    const directives = getGenerationDirectives(style, language, tone);
 
     const prompt = `
     You are an expert presentation creator. Your task is to transform the following raw text into a structured JSON array for a slide presentation. Each object in the array represents a single slide.
@@ -93,8 +97,8 @@ export const generateSlidesFromText = async (
         -   For 'IMAGE_FOCUSED': 'title' and 'image_prompt' (content is optional and should be minimal).
         -   For 'TITLE_ONLY': just the 'title'.
     5.  The 'image_prompt' MUST be in English and detailed enough for an AI image generator to create a high-quality, relevant image.
-    6.  Adhere to the following presentation style guidelines to influence your layout choices:
-        ${styleInstruction}
+    6.  Adhere to the following directives to influence your final output:
+        ${directives}
     7.  Ensure the output is a valid JSON array of slide objects. Do not include any text or markdown formatting outside of the JSON structure.
 
     **Raw Text:**

@@ -16,7 +16,13 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingMessage, setLoadingMessage] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  
+  // Generation options state
   const [presentationStyle, setPresentationStyle] = useState<PresentationStyle>('BALANCED');
+  const [language, setLanguage] = useState('Chinese (中文)');
+  const [customLanguage, setCustomLanguage] = useState('');
+  const [tone, setTone] = useState('Book Club (读书会)');
+  const [customTone, setCustomTone] = useState('');
 
 
   const handleGenerate = useCallback(async () => {
@@ -28,8 +34,24 @@ const App: React.FC = () => {
     setError(null);
     setSlides(null);
     setLoadingMessage('Initializing generation...');
+    
+    const finalLanguage = language === 'OTHER' ? customLanguage : language;
+    const finalTone = tone === 'OTHER' ? customTone : tone;
+
+    if ((language === 'OTHER' && !customLanguage.trim()) || (tone === 'OTHER' && !customTone.trim())) {
+        setError('Please specify the custom language and tone.');
+        setIsLoading(false);
+        return;
+    }
+
     try {
-      const generatedSlides = await generateSlidesFromText(inputText, presentationStyle, setLoadingMessage);
+      const generatedSlides = await generateSlidesFromText(
+        inputText, 
+        presentationStyle,
+        finalLanguage,
+        finalTone,
+        setLoadingMessage
+      );
       setSlides(generatedSlides);
     } catch (err) {
       console.error(err);
@@ -38,7 +60,7 @@ const App: React.FC = () => {
       setIsLoading(false);
       setLoadingMessage('');
     }
-  }, [inputText, presentationStyle]);
+  }, [inputText, presentationStyle, language, customLanguage, tone, customTone]);
 
   const handleExport = useCallback(() => {
     if (slides) {
@@ -112,6 +134,14 @@ const App: React.FC = () => {
             placeholder={initialText}
             presentationStyle={presentationStyle}
             onStyleChange={setPresentationStyle}
+            language={language}
+            onLanguageChange={setLanguage}
+            customLanguage={customLanguage}
+            onCustomLanguageChange={setCustomLanguage}
+            tone={tone}
+            onToneChange={setTone}
+            customTone={customTone}
+            onCustomToneChange={setCustomTone}
           />
           <div className="relative min-h-[500px] lg:min-h-0 flex flex-col items-center justify-center bg-gray-800/50 border border-dashed border-gray-600 rounded-2xl p-4">
             {isLoading && <Loader message={loadingMessage} />}
