@@ -1,19 +1,23 @@
-
 import React, { useState } from 'react';
 import type { SlideContent, LayoutType } from '../types';
+import type { Theme } from '../App';
 import Slide from './Slide';
 import ChevronLeftIcon from './icons/ChevronLeftIcon';
 import ChevronRightIcon from './icons/ChevronRightIcon';
 import DownloadIcon from './icons/DownloadIcon';
 import LayoutIcon from './icons/LayoutIcon';
+import SunIcon from './icons/SunIcon';
+import MoonIcon from './icons/MoonIcon';
 
 interface PresentationPreviewProps {
   slides: SlideContent[];
   onExport: () => void;
   onLayoutChange: (slideIndex: number, newLayout: LayoutType) => void;
+  theme: Theme;
+  onThemeChange: (theme: Theme) => void;
 }
 
-const PresentationPreview: React.FC<PresentationPreviewProps> = ({ slides, onExport, onLayoutChange }) => {
+const PresentationPreview: React.FC<PresentationPreviewProps> = ({ slides, onExport, onLayoutChange, theme, onThemeChange }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const goToPrevious = () => {
@@ -28,12 +32,16 @@ const PresentationPreview: React.FC<PresentationPreviewProps> = ({ slides, onExp
     onLayoutChange(currentSlide, e.target.value as LayoutType);
   }
 
+  const handleThemeToggle = () => {
+    onThemeChange(theme === 'dark' ? 'light' : 'dark');
+  };
+
   const currentLayout = slides[currentSlide]?.layout || 'TEXT_ONLY';
 
   return (
     <div className="w-full h-full flex flex-col">
       <div className="flex-grow flex items-center justify-center p-4">
-        <Slide slide={slides[currentSlide]} />
+        <Slide slide={slides[currentSlide]} theme={theme} />
       </div>
       <div className="flex-shrink-0 mt-4">
         <div className="flex items-center justify-between flex-wrap gap-4">
@@ -62,24 +70,33 @@ const PresentationPreview: React.FC<PresentationPreviewProps> = ({ slides, onExp
               </select>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             <button
-              onClick={goToPrevious}
-              disabled={currentSlide === 0}
-              className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              onClick={handleThemeToggle}
+              className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+              aria-label="Toggle theme"
             >
-              <ChevronLeftIcon />
+                {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
             </button>
-            <span className="text-sm font-medium text-gray-400">
-              {currentSlide + 1} / {slides.length}
-            </span>
-            <button
-              onClick={goToNext}
-              disabled={currentSlide === slides.length - 1}
-              className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronRightIcon />
-            </button>
+            <div className='flex items-center space-x-2'>
+                <button
+                onClick={goToPrevious}
+                disabled={currentSlide === 0}
+                className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                <ChevronLeftIcon />
+                </button>
+                <span className="text-sm font-medium text-gray-400 w-12 text-center">
+                {currentSlide + 1} / {slides.length}
+                </span>
+                <button
+                onClick={goToNext}
+                disabled={currentSlide === slides.length - 1}
+                className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                <ChevronRightIcon />
+                </button>
+            </div>
           </div>
         </div>
       </div>

@@ -8,6 +8,7 @@ import PresentationPreview from './components/PresentationPreview';
 import Loader from './components/Loader';
 
 export type PresentationStyle = 'BALANCED' | 'TEXT_FOCUSED' | 'VISUAL_FOCUSED';
+export type Theme = 'dark' | 'light';
 
 
 const App: React.FC = () => {
@@ -23,6 +24,7 @@ const App: React.FC = () => {
   const [customLanguage, setCustomLanguage] = useState('');
   const [tone, setTone] = useState('Book Club (读书会)');
   const [customTone, setCustomTone] = useState('');
+  const [theme, setTheme] = useState<Theme>('dark');
 
 
   const handleGenerate = useCallback(async () => {
@@ -155,7 +157,9 @@ const App: React.FC = () => {
               <PresentationPreview 
                 slides={slides} 
                 onExport={handleExport}
-                onLayoutChange={handleLayoutChange} 
+                onLayoutChange={handleLayoutChange}
+                theme={theme}
+                onThemeChange={setTheme}
               />
             )}
             {!slides && !isLoading && !error && (
