@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { SlideContent } from './types';
+import { SlideContent, LayoutType } from './types';
 import { generateSlidesFromText } from './services/geminiService';
 import { exportToPowerPoint } from './services/exportService';
 import Header from './components/Header';
@@ -50,6 +50,31 @@ const App: React.FC = () => {
       }
     }
   }, [slides]);
+
+  const handleLayoutChange = useCallback((slideIndex: number, newLayout: LayoutType) => {
+    setSlides(prevSlides => {
+      if (!prevSlides) return null;
+      const newSlides = [...prevSlides];
+      const targetSlide = { ...newSlides[slideIndex] };
+      const oldLayout = targetSlide.layout;
+
+      // Preserve content when switching layouts
+      if (oldLayout === 'TWO_COLUMNS' && newLayout !== 'TWO_COLUMNS') {
+        targetSlide.content = [...(targetSlide.content_col1 || []), ...(targetSlide.content_col2 || [])];
+        delete targetSlide.content_col1;
+        delete targetSlide.content_col2;
+      } else if (oldLayout !== 'TWO_COLUMNS' && newLayout === 'TWO_COLUMNS') {
+        const half = Math.ceil((targetSlide.content?.length || 0) / 2);
+        targetSlide.content_col1 = targetSlide.content?.slice(0, half) || [];
+        targetSlide.content_col2 = targetSlide.content?.slice(half) || [];
+        delete targetSlide.content;
+      }
+      
+      targetSlide.layout = newLayout;
+      newSlides[slideIndex] = targetSlide;
+      return newSlides;
+    });
+  }, []);
   
   const initialText = `### **演讲稿范文：从“忙碌的无效”到“成果的价值”**
 
@@ -97,7 +122,11 @@ const App: React.FC = () => {
               </div>
             )}
             {slides && !isLoading && (
-              <PresentationPreview slides={slides} onExport={handleExport} />
+              <PresentationPreview 
+                slides={slides} 
+                onExport={handleExport}
+                onLayoutChange={handleLayoutChange} 
+              />
             )}
             {!slides && !isLoading && !error && (
               <div className="text-center text-gray-500">

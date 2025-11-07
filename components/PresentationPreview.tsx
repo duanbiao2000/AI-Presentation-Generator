@@ -1,17 +1,19 @@
 
 import React, { useState } from 'react';
-import type { SlideContent } from '../types';
+import type { SlideContent, LayoutType } from '../types';
 import Slide from './Slide';
 import ChevronLeftIcon from './icons/ChevronLeftIcon';
 import ChevronRightIcon from './icons/ChevronRightIcon';
 import DownloadIcon from './icons/DownloadIcon';
+import LayoutIcon from './icons/LayoutIcon';
 
 interface PresentationPreviewProps {
   slides: SlideContent[];
   onExport: () => void;
+  onLayoutChange: (slideIndex: number, newLayout: LayoutType) => void;
 }
 
-const PresentationPreview: React.FC<PresentationPreviewProps> = ({ slides, onExport }) => {
+const PresentationPreview: React.FC<PresentationPreviewProps> = ({ slides, onExport, onLayoutChange }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const goToPrevious = () => {
@@ -22,13 +24,19 @@ const PresentationPreview: React.FC<PresentationPreviewProps> = ({ slides, onExp
     setCurrentSlide((prev) => (prev < slides.length - 1 ? prev + 1 : prev));
   };
 
+  const handleLayoutSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    onLayoutChange(currentSlide, e.target.value as LayoutType);
+  }
+
+  const currentLayout = slides[currentSlide]?.layout || 'TEXT_ONLY';
+
   return (
     <div className="w-full h-full flex flex-col">
       <div className="flex-grow flex items-center justify-center p-4">
         <Slide slide={slides[currentSlide]} />
       </div>
       <div className="flex-shrink-0 mt-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-2">
             <button
                 onClick={onExport}
@@ -37,17 +45,21 @@ const PresentationPreview: React.FC<PresentationPreviewProps> = ({ slides, onExp
                 <DownloadIcon className="w-4 h-4 mr-2"/>
                 PowerPoint
             </button>
-            <div className="relative group">
-                <button
-                    disabled
-                    className="inline-flex items-center px-3 py-1.5 border border-gray-600 text-sm font-medium rounded-md text-gray-400 bg-gray-700 cursor-not-allowed"
-                >
-                    <DownloadIcon className="w-4 h-4 mr-2"/>
-                    Keynote
-                </button>
-                <div className="absolute bottom-full mb-2 w-48 p-2 text-xs text-center text-white bg-gray-900 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                    Keynote export is not yet available.
-                </div>
+            <div className="flex items-center gap-2">
+              <label htmlFor="layout-select" className="sr-only">Slide Layout</label>
+              <LayoutIcon />
+              <select 
+                id="layout-select"
+                value={currentLayout}
+                onChange={handleLayoutSelect}
+                className="bg-gray-700 border border-gray-600 rounded-md shadow-sm pl-2 pr-8 py-1 text-left cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-white"
+              >
+                  <option value="TEXT_ONLY">Text Only</option>
+                  <option value="TEXT_WITH_IMAGE">Text &amp; Image</option>
+                  <option value="TWO_COLUMNS">Two Columns</option>
+                  <option value="IMAGE_FOCUSED">Image Focused</option>
+                  <option value="TITLE_ONLY">Title Only</option>
+              </select>
             </div>
           </div>
           <div className="flex items-center space-x-4">
